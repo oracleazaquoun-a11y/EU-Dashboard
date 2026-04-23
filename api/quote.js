@@ -1,10 +1,6 @@
 export default async function handler(req, res) {
   const { symbols } = req.query;
 
-  if (!symbols) {
-    return res.status(400).json({ error: "Missing symbols" });
-  }
-
   const apiKey = process.env.FINNHUB_KEY;
 
   try {
@@ -17,14 +13,14 @@ export default async function handler(req, res) {
 
         return {
           symbol: s,
-          price: data.c,
-          prev: data.pc
+          price: data.c || 0,
+          prev: data.pc || 0
         };
       })
     );
 
     res.status(200).json(results);
   } catch (err) {
-    res.status(500).json({ error: "Fetch failed" });
+    res.status(500).json({ error: err.message });
   }
 }
