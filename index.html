@@ -134,6 +134,7 @@ th { font-size:12px; color:#666; }
 
 const fx = 7.46;
 
+// ✅ KORREKTE FINNHUB TICKERS
 const portfolio = [
   { name:"ENR", symbol:"XETR:ENR", sector:"Energi", tag:"tag1", invested:11000, entry:160, target:220 },
   { name:"ALO", symbol:"EPA:ALO", sector:"Transport", tag:"tag2", invested:11000, entry:15, target:23 },
@@ -142,7 +143,7 @@ const portfolio = [
   { name:"NDXG", symbol:"XETR:NDX1", sector:"Vind", tag:"tag5", invested:9000, entry:35, target:58 }
 ];
 
-// historik lagres
+// historik
 let history = JSON.parse(localStorage.getItem("history")) || [];
 
 async function fetchQuote(symbols) {
@@ -170,7 +171,7 @@ async function update() {
     total += value;
     cost += p.invested;
 
-    const targetPct = ((p.target - d.price)/d.price)*100;
+    const targetPct = d.price ? ((p.target - d.price)/d.price)*100 : 0;
 
     html += `
       <tr>
@@ -216,8 +217,8 @@ function drawChart() {
       datasets: [{
         data: history,
         borderColor: '#2196f3',
-        fill: false,
-        tension: 0.3
+        tension: 0.3,
+        fill:false
       }]
     },
     options: {
