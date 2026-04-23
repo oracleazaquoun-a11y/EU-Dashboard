@@ -3,103 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Portfolio</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>EU Portfolio</title>
 
 <style>
 body {
-  margin:0;
   font-family: Inter, Arial;
-  background:#0b1020;
-  color:white;
-  padding:20px;
+  background: #f6f6f6;
+  margin: 0;
+  padding: 30px;
+  color: #111;
 }
 
-h1 { margin-bottom:15px; }
+h1 {
+  font-size: 26px;
+  margin-bottom: 5px;
+}
+
+.sub {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.bar {
+  display: flex;
+  height: 8px;
+  margin-bottom: 30px;
+}
+.bar div { flex:1 }
+.bar div:nth-child(1){background:#6c63ff;}
+.bar div:nth-child(2){background:#4caf50;}
+.bar div:nth-child(3){background:#2196f3;}
+.bar div:nth-child(4){background:#ff9800;}
+.bar div:nth-child(5){background:#f44336;}
 
 .grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:15px;
-  margin-bottom:20px;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  margin-bottom: 30px;
 }
 
-.card {
-  background:#121a33;
-  padding:15px;
-  border-radius:12px;
+.metric {
+  font-size: 14px;
+}
+.metric h2 {
+  margin: 5px 0;
 }
 
-.green{color:#35d07f;}
-.red{color:#ff6b6b;}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
 
-table {width:100%;margin-top:10px;}
-td,th {padding:10px;text-align:left;}
+th {
+  text-align: left;
+  padding: 12px;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #eee;
+}
+
+td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
 
 .badge {
-  background:#1f2a50;
-  padding:4px 10px;
-  border-radius:10px;
-  font-size:12px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 12px;
 }
+
+.green { color: #2e7d32; }
+.red { color: #c62828; }
+
+.tag1 { background:#e3f2fd; }
+.tag2 { background:#fce4ec; }
+.tag3 { background:#e8f5e9; }
+.tag4 { background:#fff3e0; }
+.tag5 { background:#f3e5f5; }
+
 </style>
 </head>
 
 <body>
 
-<h1>📊 Pro Portfolio</h1>
+<h1>Europæiske aktier — 50.000 DKK</h1>
+<div class="sub">5 spekulative picks · Frankfurt · Paris · DAX / CAC / XETRA</div>
+
+<div class="bar">
+  <div></div><div></div><div></div><div></div><div></div>
+</div>
 
 <div class="grid">
-  <div class="card">
-    <div>Total Value</div>
+  <div class="metric">
+    Investeret
+    <h2 id="invested">50.000 kr</h2>
+  </div>
+
+  <div class="metric">
+    Nuværende værdi
     <h2 id="value">-</h2>
   </div>
 
-  <div class="card">
-    <div>Total P/L</div>
+  <div class="metric">
+    Samlet P&L
     <h2 id="pl">-</h2>
+  </div>
+
+  <div class="metric">
+    EUR/DKK
+    <h2>7.46</h2>
+    <small>fast kurs brugt</small>
   </div>
 </div>
 
 <table>
 <thead>
 <tr>
-<th>Stock</th>
-<th>Price</th>
-<th>Entry</th>
-<th>P/L</th>
-<th>%</th>
-<th>Target</th>
-<th>To Target</th>
+<th>Aktie</th>
+<th>Sektor</th>
+<th>Kurs</th>
+<th>Investeret</th>
+<th>P&L</th>
+<th>P&L %</th>
+<th>Mål</th>
 </tr>
 </thead>
 <tbody id="table"></tbody>
 </table>
 
-<div id="charts"></div>
-
 <script>
 
-const fx = 6.9;
+const fx = 7.46;
 
 const portfolio = [
-  { name:"OKLO", symbol:"OKLO", invested:11000, entry:65, target:99 },
-  { name:"IONQ", symbol:"IONQ", invested:11000, entry:40, target:66 },
-  { name:"NBIS", symbol:"NBIS", invested:10000, entry:140, target:211 },
-  { name:"SERV", symbol:"SERV", invested:9000, entry:8, target:16 },
-  { name:"UEC", symbol:"UEC", invested:9000, entry:12, target:12 }
+  { name:"ENR", symbol:"ENR.DE", sector:"Energi", tag:"tag1", invested:11000, entry:160, target:220 },
+  { name:"ALO", symbol:"ALO.PA", sector:"Transport", tag:"tag2", invested:11000, entry:15, target:23 },
+  { name:"NCH2", symbol:"NCH2.DE", sector:"Hydrogen", tag:"tag3", invested:9000, entry:5, target:13 },
+  { name:"HEI", symbol:"HEI.DE", sector:"Materialer", tag:"tag4", invested:10000, entry:170, target:240 },
+  { name:"NDXG", symbol:"NDX1.DE", sector:"Vind", tag:"tag5", invested:9000, entry:35, target:58 }
 ];
 
 async function fetchQuote(symbols) {
   const res = await fetch(`/api/quote?symbols=${symbols}`);
   return await res.json();
-}
-
-async function fetchChart(symbol) {
-  const res = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&count=30&token=demo`);
-  const data = await res.json();
-  return data.c || [];
 }
 
 async function update() {
@@ -109,51 +159,40 @@ async function update() {
 
   let total=0, cost=0;
   let html="";
-  let chartsHTML="";
 
-  for (let d of data) {
+  data.forEach(d => {
     const p = portfolio.find(x=>x.symbol===d.symbol);
 
-    const shares = p.invested/(p.entry*fx);
-    const value = shares*d.price*fx;
-    const pl = value-p.invested;
+    const shares = p.invested/(p.entry);
+    const value = shares*d.price;
+    const pl = value - p.invested;
     const pct = (pl/p.invested)*100;
+    const targetPct = ((p.target-d.price)/d.price)*100;
 
-    const toTarget = ((p.target - d.price)/d.price)*100;
-
-    total+=value;
-    cost+=p.invested;
+    total += value;
+    cost += p.invested;
 
     html += `
       <tr>
         <td><b>${p.name}</b></td>
-        <td>$${d.price.toFixed(2)}</td>
-        <td>$${p.entry}</td>
+        <td><span class="badge ${p.tag}">${p.sector}</span></td>
+        <td>€${d.price.toFixed(2)}</td>
+        <td>${p.invested} kr</td>
         <td class="${pl>=0?'green':'red'}">${pl.toFixed(0)}</td>
         <td class="${pct>=0?'green':'red'}">${pct.toFixed(1)}%</td>
-        <td>$${p.target}</td>
-        <td class="${toTarget>=0?'green':'red'}">${toTarget.toFixed(1)}%</td>
+        <td>€${p.target} (${targetPct.toFixed(0)}%)</td>
       </tr>
     `;
-
-    chartsHTML += `
-      <div class="card">
-        <h3>${p.name}</h3>
-        <canvas id="${p.symbol}" height="80"></canvas>
-      </div>
-    `;
-  }
+  });
 
   document.getElementById("table").innerHTML = html;
-  document.getElementById("charts").innerHTML = chartsHTML;
 
-  const totalPL = total-cost;
+  const totalPL = total - cost;
   const totalPct = (totalPL/cost)*100;
 
   document.getElementById("value").innerText = total.toFixed(0)+" kr";
   document.getElementById("pl").innerHTML =
     `<span class="${totalPL>=0?'green':'red'}">${totalPL.toFixed(0)} kr (${totalPct.toFixed(1)}%)</span>`;
-
 }
 
 setInterval(update,10000);
