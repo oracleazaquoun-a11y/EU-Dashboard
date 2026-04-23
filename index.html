@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Portfolio</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  background:#0b1020;
+  color:white;
+  padding:20px;
+}
+
+.card {
+  background:#121a33;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+
+.green{color:#35d07f;}
+.red{color:#ff6b6b;}
+
+table{width:100%;margin-top:10px;}
+td,th{padding:10px;text-align:left;}
+</style>
+</head>
+
+<body>
+
+<h2>📊 Live Portfolio</h2>
+
+<div class="card">
+  <div>Value: <span id="value">-</span></div>
+  <div>P/L: <span id="pl">-</span></div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Stock</th>
+<th>Price</th>
+<th>P/L</th>
+<th>%</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
+<script>
+
+const fx = 6.9;
+
+const portfolio = [
+  { name:"OKLO", symbol:"OKLO", invested:11000 },
+  { name:"IONQ", symbol:"IONQ", invested:11000 },
+  { name:"NBIS", symbol:"NBIS", invested:10000 },
+  { name:"SERV", symbol:"SERV", invested:9000 },
+  { name:"UEC", symbol:"UEC", invested:9000 }
+];
+
+let entry = {};
+
+async function fetchQuote(symbols) {
+  const res = await fetch(`/api/quote?symbols=${symbols}`);
+  return await res.json();
+}
+
+async function init() {
+  const symbols = portfolio.map(p=>p.symbol).join(",");
+  const data = await fetchQuote(symbols);
+
+  data.forEach(d => {
+    entry[d.symbol] = d.price;
+  });
+}
+
+async function update() {
+  const symbols = portfolio.map(p=>p.symbol).join(",");
+  const data = await fetchQuote(symbols);
+
+  let total=0, cost=0;
+  let html="";
+
+  data.forEach(d => {
+    const p = portfolio.find(x=>x.symbol===d.symbol);
+
+    const shares = p.invested/(entry[d.symbol]*fx);
+    const value = shares*d.price*fx;
+    const pl = value-p.invested;
+    const pct = (pl/p.invested)*100;
+
+    total += value;
+    cost += p.invested;
+
+    html += `
+      <tr>
+        <td>${p.name}</td>
+        <td>$${d.price.toFixed(2)}</td>
+        <td class="${pl>=0?'green':'red'}">${pl.toFixed(0)}</td>
+        <td class="${pct>=0?'green':'red'}">${pct.toFixed(1)}%</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("table").innerHTML = html;
+
+  const totalPL = total-cost;
+  const totalPct = (totalPL/cost)*100;
+
+  document.getElementById("value").innerText = total.toFixed(0)+" kr";
+  document.getElementById("pl").innerHTML =
+    `<span class="${totalPL>=0?'green':'red'}">${totalPL.toFixed(0)} kr (${totalPct.toFixed(1)}%)</span>`;
+}
+
+init().then(()=>{
+  update();
+  setInterval(update,10000);
+});
+
+</script>
+
+</body>
+</html>
